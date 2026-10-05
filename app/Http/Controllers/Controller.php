@@ -9,7 +9,7 @@ use OpenApi\Attributes as OA;
     title: "API de E-commerce Segura con Swagger Completo",
     description: "API RESTful para la gestion de clientes, catalogo de productos, ordenes de compra y procesamiento de pagos mediante Stripe. Construida con Laravel 12 y autenticacion basada en tokens (Sanctum)."
 )]
-#[OA\Server(url: "L5_SWAGGER_CONST_HOST", description: "Servidor de la API")]
+#[OA\Server(url: L5_SWAGGER_CONST_HOST, description: "Servidor de la API")]
 #[OA\SecurityScheme(
     securityScheme: "sanctum",
     type: "http",

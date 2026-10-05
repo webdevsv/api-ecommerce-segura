@@ -44,13 +44,13 @@ return [
     | Expiration Minutes
     |--------------------------------------------------------------------------
     |
-    | This value controls the number of minutes until an issued token will be
-    | considered expired. This will override any values set in the token's
-    | "expires_at" attribute, but first-party sessions are not affected.
+    | Minutos hasta que un token emitido se considera vencido.
+    | Por defecto 7 dias (10080 min), igual que la cookie del frontend.
+    | Se puede cambiar con SANCTUM_EXPIRATION en el .env.
     |
     */
 
-    'expiration' => null,
+    'expiration' => (int) env('SANCTUM_EXPIRATION', 60 * 24 * 7),
 
     /*
     |--------------------------------------------------------------------------

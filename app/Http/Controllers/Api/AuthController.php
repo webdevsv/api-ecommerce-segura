@@ -17,6 +17,20 @@ class AuthController extends Controller
         path: "/register",
         tags: ["Autenticacion"],
         summary: "Registrar un nuevo cliente",
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ["name", "email", "password", "password_confirmation"],
+                properties: [
+                    new OA\Property(property: "name", type: "string", example: "Cliente Prueba"),
+                    new OA\Property(property: "email", type: "string", format: "email", example: "prueba@correo.com"),
+                    new OA\Property(property: "password", type: "string", example: "12345678"),
+                    new OA\Property(property: "password_confirmation", type: "string", example: "12345678"),
+                    new OA\Property(property: "phone", type: "string", example: "70001234"),
+                    new OA\Property(property: "address", type: "string", example: "San Salvador"),
+                ]
+            )
+        ),
         responses: [
             new OA\Response(response: 201, description: "Cliente registrado exitosamente"),
             new OA\Response(response: 422, description: "Error de validacion"),
@@ -50,6 +64,16 @@ class AuthController extends Controller
         path: "/login",
         tags: ["Autenticacion"],
         summary: "Iniciar sesion y obtener un token de acceso",
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ["email", "password"],
+                properties: [
+                    new OA\Property(property: "email", type: "string", format: "email", example: "prueba@correo.com"),
+                    new OA\Property(property: "password", type: "string", example: "12345678"),
+                ]
+            )
+        ),
         responses: [
             new OA\Response(response: 200, description: "Autenticacion exitosa"),
             new OA\Response(response: 401, description: "Credenciales invalidas"),

@@ -7,7 +7,7 @@
     },
     "servers": [
         {
-            "url": "L5_SWAGGER_CONST_HOST",
+            "url": "http://127.0.0.1:8000/api",
             "description": "Servidor de la API"
         }
     ],
@@ -19,6 +19,49 @@
                 ],
                 "summary": "Registrar un nuevo cliente",
                 "operationId": "5d4fa5d5607ed675ba93907e1fc94534",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "email",
+                                    "password",
+                                    "password_confirmation"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Cliente Prueba"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "prueba@correo.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "example": "12345678"
+                                    },
+                                    "password_confirmation": {
+                                        "type": "string",
+                                        "example": "12345678"
+                                    },
+                                    "phone": {
+                                        "type": "string",
+                                        "example": "70001234"
+                                    },
+                                    "address": {
+                                        "type": "string",
+                                        "example": "San Salvador"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
                 "responses": {
                     "201": {
                         "description": "Cliente registrado exitosamente"
@@ -36,6 +79,31 @@
                 ],
                 "summary": "Iniciar sesion y obtener un token de acceso",
                 "operationId": "67d6d0fdd54fba132e1b6f55ca254183",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "prueba@correo.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "example": "12345678"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
                 "responses": {
                     "200": {
                         "description": "Autenticacion exitosa"
@@ -120,6 +188,41 @@
                 ],
                 "summary": "Crear una orden de compra y generar el intento de pago en Stripe",
                 "operationId": "b6490f9d9026dbe871b41207e118fffb",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "items"
+                                ],
+                                "properties": {
+                                    "shipping_address": {
+                                        "type": "string",
+                                        "example": "Colonia Escalon, San Salvador"
+                                    },
+                                    "items": {
+                                        "type": "array",
+                                        "items": {
+                                            "properties": {
+                                                "product_id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "quantity": {
+                                                    "type": "integer",
+                                                    "example": 2
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
                 "responses": {
                     "201": {
                         "description": "Orden creada. Incluye el client_secret de Stripe"
@@ -244,10 +347,12 @@
                     {
                         "name": "per_page",
                         "in": "query",
-                        "description": "Resultados por pagina",
+                        "description": "Resultados por pagina (entre 1 y 50)",
                         "schema": {
                             "type": "integer",
-                            "default": 15
+                            "default": 15,
+                            "maximum": 50,
+                            "minimum": 1
                         }
                     }
                 ],

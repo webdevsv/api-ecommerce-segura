@@ -18,7 +18,7 @@ class ProductController extends Controller
         summary: "Listar catalogo de productos (acceso publico)",
         parameters: [
             new OA\Parameter(name: "search", in: "query", description: "Buscar por nombre", schema: new OA\Schema(type: "string")),
-            new OA\Parameter(name: "per_page", in: "query", description: "Resultados por pagina", schema: new OA\Schema(type: "integer", default: 15)),
+            new OA\Parameter(name: "per_page", in: "query", description: "Resultados por pagina (entre 1 y 50)", schema: new OA\Schema(type: "integer", default: 15, minimum: 1, maximum: 50)),
         ],
         responses: [
             new OA\Response(response: 200, description: "Listado paginado de productos activos"),
@@ -32,8 +32,11 @@ class ProductController extends Controller
             $query->where('name', 'like', "%{$search}%");
         }
 
+        // Limita per_page entre 1 y 50 para evitar consultas gigantes
+        $perPage = min(max($request->integer('per_page', 15), 1), 50);
+
         $products = $query->orderBy('created_at', 'desc')
-            ->paginate($request->integer('per_page', 15));
+            ->paginate($perPage);
 
         return response()->json([
             'success' => true,
@@ -129,7 +132,7 @@ class ProductController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Producto eliminado exitosamente.',
+                        'message' => 'Producto eliminado exitosamente.',
         ]);
     }
 }

@@ -13,7 +13,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use OpenApi\Attributes as OA;
-use Stripe\Exception\ApiErrorException;
 use Throwable;
 
 class OrderController extends Controller
@@ -51,6 +50,25 @@ class OrderController extends Controller
         tags: ["Ordenes"],
         summary: "Crear una orden de compra y generar el intento de pago en Stripe",
         security: [["sanctum" => []]],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ["items"],
+                properties: [
+                    new OA\Property(property: "shipping_address", type: "string", example: "Colonia Escalon, San Salvador"),
+                    new OA\Property(
+                        property: "items",
+                        type: "array",
+                        items: new OA\Items(
+                            properties: [
+                                new OA\Property(property: "product_id", type: "integer", example: 1),
+                                new OA\Property(property: "quantity", type: "integer", example: 2),
+                            ]
+                        )
+                    ),
+                ]
+            )
+        ),
         responses: [
             new OA\Response(response: 201, description: "Orden creada. Incluye el client_secret de Stripe"),
             new OA\Response(response: 422, description: "Error de validacion o stock insuficiente"),
@@ -143,14 +161,13 @@ class OrderController extends Controller
                 'status' => 'requires_payment',
                 'raw_response' => $intent->toArray(),
             ]);
-        } catch (ApiErrorException $e) {
-            Log::error('Error de Stripe: '.$e->getMessage());
-            $order->update(['status' => 'failed']);
+        } catch (Throwable $e) {
+            Log::error('Error al generar el pago: '.$e->getMessage());
+            $this->releaseStock($order);
 
             return response()->json([
                 'success' => false,
                 'message' => 'No se pudo generar el intento de pago con Stripe.',
-                'error' => $e->getMessage(),
             ], 402);
         }
 
@@ -191,5 +208,27 @@ class OrderController extends Controller
             'success' => true,
             'data' => $order->load(['items.product', 'payment']),
         ]);
+    }
+
+    /**
+     * Devuelve el stock de una orden y la marca como fallida.
+     * Es idempotente: si la orden ya no esta pendiente, no hace nada.
+     */
+    private function releaseStock(Order $order): void
+    {
+        DB::transaction(function () use ($order) {
+            $order = Order::whereKey($order->id)->lockForUpdate()->first();
+
+            if (! $order || $order->status !== 'pending') {
+                return;
+            }
+
+            foreach ($order->items as $item) {
+                Product::where('id', $item->product_id)
+                    ->increment('stock', $item->quantity);
+            }
+
+            $order->update(['status' => 'failed']);
+        });
     }
 }

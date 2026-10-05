@@ -35,6 +35,15 @@ class Payment extends Model
         'raw_response',
     ];
 
+    /**
+     * Campos que no se exponen en las respuestas JSON de la API.
+     * El client_secret se entrega solo al crear la orden (data.client_secret).
+     */
+    protected $hidden = [
+        'stripe_client_secret',
+        'raw_response',
+    ];
+
     protected function casts(): array
     {
         return [
